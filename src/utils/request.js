@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { MessageBox, Message } from 'element-ui'
+import {MessageBox, Message} from 'element-ui'
 import store from '@/store'
-import { getToken } from '@/utils/auth'
+import {getToken} from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
@@ -62,7 +62,7 @@ service.interceptors.response.use(response => {
   error => {
     console.log('err' + error) // for debug
     Message({
-      message: error.message,
+      message: '请求服务器失败啦！',
       type: 'error',
       duration: 5 * 1000
     })

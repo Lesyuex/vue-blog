@@ -18,10 +18,11 @@ export function listCurrentUserRoutes() {
   })
 }
 
-export function list() {
+export function list(params) {
   return request({
     url:  '/user/list',
-    method: 'get'
+    method: 'get',
+    params
   })
 }
 
