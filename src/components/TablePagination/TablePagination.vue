@@ -133,11 +133,9 @@
       emitSwitch(parentMethodName, data) {
         console.log('emitSwitch')
         this.$bus.emit(parentMethodName, data)  //调用父组件方法
-        this.loadTableData()
       },
       emitOperate(parentMethodName, data) {
         this.$bus.emit(parentMethodName, data) //调用父组件方法
-        this.loadTableData()
       },
       loadTableData() {
         const that = this

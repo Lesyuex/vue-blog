@@ -124,7 +124,7 @@
     mounted() {
       //监听
       this.$bus.$on('changeUserStatus', (data) => {
-        data.enable = !data.enable
+        data['enable'] = !data['enable']
         this.updateUser(data)
       })
       //监听
@@ -156,7 +156,7 @@
               type: 'success',
               duration: 5 * 1000
             })
-            //this.$refs.table.refresh(true)
+            this.$refs.table.refresh(true)
           }
         })
       },
