@@ -22,15 +22,6 @@
               active-color="#13ce66"
               inactive-color="#ff4949"/>
           </span>
-          <span v-else-if="col.operate">
-            <el-button
-              v-for="(item,index) in col.operate"
-              :key="index"
-              :type="item.type"
-              @click="showItem(item)" size="mini">
-              {{item.label}}
-            </el-button>
-          </span>
           <span v-else-if="col.render">
             {{col.render(scope.row)}}
           </span>
@@ -44,7 +35,7 @@
                        align="center">
         <template slot-scope="scope">
           <span v-if="tableOperate.type==='link'">
-          <el-link
+          <el-link style="margin: 3px"
             v-for="(item,index) in tableOperate.options"
             :key="index"
             :type="item.type"
@@ -53,6 +44,7 @@
             @click="emitOperate(item.method,scope.row)">
             {{item.label}}
           </el-link>
+
           </span>
           <span v-else-if="tableOperate.type==='button'">
                <el-button
@@ -120,9 +112,9 @@
         columnWidth: (100 / (this.column.length + this.tableOperate.length)) + '%',
         paginationInfo: {
           current: 1,
-          size: 15,
+          size: 12,
           total: 0,
-          sizes: [10, 15, 20, 50]
+          sizes: [12, 20, 30, 50]
         }
       }
     },
@@ -133,12 +125,19 @@
       this.loadTableData()
     },
     methods: {
+      refresh(bool = false) {
+        if (bool) {
+          this.loadTableData()
+        }
+      },
       emitSwitch(parentMethodName, data) {
         console.log('emitSwitch')
         this.$bus.emit(parentMethodName, data)  //调用父组件方法
+        this.loadTableData()
       },
       emitOperate(parentMethodName, data) {
         this.$bus.emit(parentMethodName, data) //调用父组件方法
+        this.loadTableData()
       },
       loadTableData() {
         const that = this
@@ -150,8 +149,12 @@
         }
         that.loadDataMethod(params).then(res => {
           that.tableData = res.data.records
-          if (that.showPagination) {
-            that.paginationInfo.total = res.data.total
+          if (that.showPagination && res.data.records.length === 0 && that.paginationInfo.current > 1) {
+            this.handleCurrentChange(that.paginationInfo.current - 1)
+          } else {
+            if (that.showPagination) {
+              that.paginationInfo.total = res.data.total
+            }
           }
         })
       },
