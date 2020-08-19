@@ -5,71 +5,80 @@
       size="mini"
       :row-class-name="tableRowClassName"
       border
-      style="width: 100%">
+      style="width: 100%"
+    >
       <el-table-column
         v-for="(col,key) in column"
         :key="key"
         :prop="col.prop"
         :label="col.label"
         :min-width="col.width?col.width:columnWidth"
-        :show-overflow-tooltip=true
-        align="center">
+        :show-overflow-tooltip="true"
+        align="center"
+      >
         <template slot-scope="scope">
           <span v-if="col.useSwitch">
             <el-switch
               v-model="scope.row[col.prop]"
-              @change="emitSwitch(col.method,scope.row)"
               active-color="#13ce66"
-              inactive-color="#ff4949"/>
+              inactive-color="#ff4949"
+              @change="emitSwitch(col.method,scope.row)"
+            />
           </span>
           <span v-else-if="col.render">
-            {{col.render(scope.row)}}
+            {{ col.render(scope.row) }}
           </span>
-          <span v-else>{{scope.row[col.prop]}}</span>
+          <span v-else>{{ scope.row[col.prop] }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="tableOperate.label"
-                       :width="tableOperate.width?tableOperate.width:columnWidth"
-                       :label="tableOperate.label"
-                       class-name="small-padding fixed-width"
-                       align="center">
+      <el-table-column
+        v-if="tableOperate.label"
+        :width="tableOperate.width?tableOperate.width:columnWidth"
+        :label="tableOperate.label"
+        class-name="small-padding fixed-width"
+        align="center"
+      >
         <template slot-scope="scope">
           <span v-if="tableOperate.type==='link'">
-          <el-link style="margin: 3px"
-            v-for="(item,index) in tableOperate.options"
-            :key="index"
-            :type="item.type"
-            :icon="item.icon"
-            :underline="false"
-            @click="emitOperate(item.method,scope.row)">
-            {{item.label}}
-          </el-link>
+            <el-link
+              v-for="(item,index) in tableOperate.options"
+              :key="index"
+              style="margin: 3px"
+              :type="item.type"
+              :icon="item.icon"
+              :underline="false"
+              @click="emitOperate(item.method,scope.row)"
+            >
+              {{ item.label }}
+            </el-link>
 
           </span>
           <span v-else-if="tableOperate.type==='button'">
-               <el-button
-                 v-for="(item,index) in tableOperate.options"
-                 :key="index"
-                 :type="item.type"
-                 :icon="item.icon"
-                 :size="item.size"
-                 @click="emitOperate(item.method,scope.row)">
-            {{item.label}}
-          </el-button>
+            <el-button
+              v-for="(item,index) in tableOperate.options"
+              :key="index"
+              :type="item.type"
+              :icon="item.icon"
+              :size="item.size"
+              @click="emitOperate(item.method,scope.row)"
+            >
+              {{ item.label }}
+            </el-button>
           </span>
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination v-if="showPagination"
-                   align="right"
-                   @size-change="handleSizeChange"
-                   @current-change="handleCurrentChange"
-                   :current-page="paginationInfo.current"
-                   :page-sizes="paginationInfo.sizes"
-                   :page-size="paginationInfo.size"
-                   layout="total, sizes, prev, pager, next, jumper"
-                   :total="paginationInfo.total">
-    </el-pagination>
+    <el-pagination
+      v-if="showPagination"
+      align="right"
+      :current-page="paginationInfo.current"
+      :page-sizes="paginationInfo.sizes"
+      :page-size="paginationInfo.size"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="paginationInfo.total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
   </div>
 </template>
 
@@ -125,22 +134,22 @@
       this.loadTableData()
     },
     methods: {
-      refresh(bool = false) {
-        if (bool) {
-          this.loadTableData()
-        }
+      refreshTable() {
+        this.loadTableData()
       },
       emitSwitch(parentMethodName, data) {
         console.log('emitSwitch')
-        this.$bus.emit(parentMethodName, data)  //调用父组件方法
+        this.$bus.emit(parentMethodName, data) // 调用父组件方法
+        this.refreshTable()
       },
       emitOperate(parentMethodName, data) {
-        this.$bus.emit(parentMethodName, data) //调用父组件方法
+        this.$bus.emit(parentMethodName, data) // 调用父组件方法
+        this.refreshTable()
       },
       loadTableData() {
         const that = this
-        let params = {}
-        //拼接参数
+        const params = {}
+        // 拼接参数
         if (that.showPagination) {
           params.current = that.paginationInfo.current
           params.size = that.paginationInfo.size
