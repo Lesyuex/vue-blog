@@ -21,8 +21,8 @@
       ref="table"
       :load-data-method="loadData"
       :show-pagination="true"
-      :column="column"
-      :table-operate="tableOperate"
+      :columns="columns"
+      :table-operate-array="tableOperateArray"
     />
     <el-dialog :title="userModal.title" :visible.sync="userModal.dialogTableVisible" :width="dialogWidth">
       <el-form ref="form" :model="userModal.user" label-width="80px">
@@ -62,47 +62,51 @@
           username: '',
           status: ''
         },
-        column: [
+        columns: [
           {
             prop: 'id',
             label: '#Id',
-            width: '20'
+            width:60
           },
           {
             prop: 'username',
-            label: '用户名'
+            label: '用户名',
           },
           {
             prop: 'email',
-            label: 'Email'
+            label: 'Email',
+            width: 210
           },
           {
             prop: 'createTime',
-            label: '创建时间'
+            label: '创建时间',
+            width: 200
           },
           {
             prop: 'updateTime',
-            label: '更新时间'
+            label: '更新时间',
+            width: 200
           },
           {
             prop: 'enable',
             label: '账户状态',
-            width: '30',
             useSwitch: true,
-            method: 'updateUser'
+            method: 'updateUser',
+            width:80
           }
         ],
-        tableOperate: {
+        tableOperateArray:[
+          {
           label: '操作',
           type: 'link',
-          width: '100',
+            width:80,
           options: [
             {
               label: '',
               type: 'primary',
               method: 'editUser',
               icon: 'el-icon-edit',
-              size: 'mini'
+              size: 'mini',
             },
             {
               label: '',
@@ -113,6 +117,22 @@
             }
           ]
         },
+          {
+            label: '角色',
+            type: 'link',
+            width:60,
+            options: [
+              {
+                label: '',
+                type: 'success',
+                method: 'editUser',
+                icon: 'el-icon-s-custom',
+                size: 'mini',
+                circle:true
+              }
+              ]
+          }
+        ] ,
         loadData: params => {
           return list(Object.assign(params, this.queryParam)).then(res => {
             return res
@@ -140,7 +160,6 @@
         this.$refs.table.refreshTable()
       },
       editUser(data) {
-        console.log(data)
         this.userModal.user = data
         this.userModal.dialogTableVisible = true
       },

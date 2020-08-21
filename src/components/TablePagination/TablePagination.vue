@@ -1,19 +1,21 @@
 <template>
   <div class="app-container">
+    <!--表格-->
     <el-table
       :data="tableData"
+      ref="elementuiTable"
       size="mini"
       :row-class-name="tableRowClassName"
       border
-      style="width: 100%"
     >
+     <!--数据列-->
       <el-table-column
-        v-for="(col,key) in column"
+        v-for="(col,key) in this.$props.columns"
         :key="key"
         :prop="col.prop"
         :label="col.label"
-        :min-width="col.width?col.width:columnWidth"
         :show-overflow-tooltip="true"
+        :width="col.width?col.width:columnWidth"
         align="center"
       >
         <template slot-scope="scope">
@@ -31,36 +33,40 @@
           <span v-else>{{ scope.row[col.prop] }}</span>
         </template>
       </el-table-column>
+      <!--操作列-->
       <el-table-column
-        v-if="tableOperate.label"
-        :width="tableOperate.width?tableOperate.width:columnWidth"
-        :label="tableOperate.label"
         class-name="small-padding fixed-width"
         align="center"
-      >
+        v-for="(col,colIndex) in this.$props.tableOperateArray"
+        :width="col.width?col.width:columnWidth"
+        :key="col.label"
+        :label="col.label">
         <template slot-scope="scope">
-          <span v-if="tableOperate.type==='link'">
+          <!--链接类型-->
+          <span v-if="col.type==='link'">
             <el-link
-              v-for="(item,index) in tableOperate.options"
+              v-for="(item,index) in col.options"
               :key="index"
-              style="margin: 3px"
+              style="padding: 5px"
               :type="item.type"
               :icon="item.icon"
               :underline="false"
-              @click="emitOperate(item.method,scope.row)"
-            >
+              @click="emitOperate(item.method,scope.row)">
               {{ item.label }}
             </el-link>
-
           </span>
-          <span v-else-if="tableOperate.type==='button'">
+          <!--button类型-->
+          <span v-else-if="col.type==='button'">
             <el-button
-              v-for="(item,index) in tableOperate.options"
+              v-for="(item,index) in col.options"
               :key="index"
               :type="item.type"
               :icon="item.icon"
               :size="item.size"
               @click="emitOperate(item.method,scope.row)"
+              :circle="item.circle"
+              :plain="item.plain"
+              :round="item.round"
             >
               {{ item.label }}
             </el-button>
@@ -68,6 +74,7 @@
         </template>
       </el-table-column>
     </el-table>
+    <!--分页-->
     <el-pagination
       v-if="showPagination"
       align="right"
@@ -84,10 +91,11 @@
 
 <script>
 
+  const documentWidth = document.body.clientWidth
   export default {
     name: 'TablePagination',
     props: {
-      column: {
+      columns: {
         type: Array,
         required: true
       },
@@ -105,11 +113,10 @@
         required: false,
         default: () => [10, 15, 20, 50]
       },
-      tableOperate: {
-        type: Object,
+      tableOperateArray: {
+        type: Array,
         required: false,
-        default: () => {
-        }
+        default: () => []
       }
     },
     data() {
@@ -118,41 +125,55 @@
           switch: true
         },
         tableData: [],
-        columnWidth: (100 / (this.column.length + this.tableOperate.length)) + '%',
+        columnWidth: 0,
         paginationInfo: {
           current: 1,
           size: 12,
           total: 0,
           sizes: [12, 20, 30, 50]
-        }
+        },
       }
     },
+    //created执行时挂载阶段还没有开始，模版还没有渲染成html，所以无法获取元素。created钩子函数主要用来初始化数据。可用data和prop中的数据
     created() {
 
     },
+    //computed是在DOM执行完成后立马执行（如：赋值）
+    //该函数在模版渲染完成后才被调用
     mounted() {
-      this.loadTableData()
+      // 计算列宽
+      let sumWidth = 0
+      let sumNoWidth = 0
+      this.$props.columns.forEach(col=>{
+        if (col.width) {
+          sumWidth = sumWidth+col.width
+        }else {
+          sumNoWidth=sumNoWidth+1
+        }
+      })
+      this.$props.tableOperateArray.forEach(item=>{
+        if (item.width){
+          sumWidth = sumWidth+item.width
+        }else {
+          sumNoWidth=sumNoWidth+1
+        }
+      })
+      let el = document.getElementsByClassName('el-table')
+      if (sumNoWidth!==0){
+        this.columnWidth= (el[0].offsetWidth - sumWidth)/(sumNoWidth)
+      }
+      console.log(sumWidth)
+      console.log(sumNoWidth)
+      console.log(this.columnWidth)
+      this.refreshTable()
     },
     methods: {
-      refreshTable() {
-        this.loadTableData()
-      },
-      emitSwitch(parentMethodName, data) {
-        console.log('emitSwitch')
-        this.$bus.emit(parentMethodName, data) // 调用父组件方法
-        this.refreshTable()
-      },
-      emitOperate(parentMethodName, data) {
-        this.$bus.emit(parentMethodName, data) // 调用父组件方法
-        this.refreshTable()
-      },
       loadTableData() {
         const that = this
-        const params = {}
         // 拼接参数
+        let params=Object.assign({})
         if (that.showPagination) {
-          params.current = that.paginationInfo.current
-          params.size = that.paginationInfo.size
+        params=Object.assign(params,{current:that.paginationInfo.current,size:params.size = that.paginationInfo.size})
         }
         that.loadDataMethod(params).then(res => {
           that.tableData = res.data.records
@@ -164,6 +185,19 @@
             }
           }
         })
+      },
+      refreshTable() {
+        this.loadTableData()
+      },
+      async emitSwitch(parentMethodName, data) {
+        this.$bus.emit(parentMethodName, data) // 调用父组件方法
+        console.log('emitSwitch')
+        this.refreshTable()
+      },
+      async emitOperate(parentMethodName, data) {
+        this.$bus.emit(parentMethodName, data) // 调用父组件方法
+        console.log('emitOperate')
+        this.refreshTable()
       },
       showItem(item) {
         console.log(item)
