@@ -1,5 +1,5 @@
-import {asyncRoutes, constantRoutes} from '@/router'
-import {listCurrentUserRoutes} from '@/api/user'
+import { asyncRoutes, constantRoutes } from '@/router'
+import { listCurrentUserRoutes } from '@/api/user'
 
 /**
  * Use meta.role to determine if the current user has permission
@@ -23,7 +23,7 @@ export function filterAsyncRoutes(routes, roles) {
   const res = []
 
   routes.forEach(route => {
-    const tmp = {...route}
+    const tmp = { ...route }
     if (hasPermission(roles, tmp)) {
       if (tmp.children) {
         tmp.children = filterAsyncRoutes(tmp.children, roles)
@@ -36,6 +36,7 @@ export function filterAsyncRoutes(routes, roles) {
 }
 
 import Layout from '@/layout'
+
 /**
  * 树状菜单转为路由
  * @param treeMenuJson
@@ -44,11 +45,13 @@ import Layout from '@/layout'
 export const treeMenuToRouters = (treeMenuJson) => {
   const treeMenu = treeMenuJson.filter(router => {
     if (router.meta) {
-      router.meta.icon = router.meta.icon ? router.meta.icon : ''
+      router.meta.icon = router.meta.icon ? router.meta.icon : 'component"'
     }
     if (router.component) {
       if (router.component === 'Layout') {
         router.component = Layout
+      } else if (router.component === 'Test') {
+        router.component = 'Test组件'
       } else {
         router.component = loadView(router.component)
       }
@@ -58,14 +61,15 @@ export const treeMenuToRouters = (treeMenuJson) => {
     }
     return true
   })
-  treeMenu.push({path: '*', redirect: '/404', hidden: true})
+  treeMenu.push({ path: '*', redirect: '/404', hidden: true })
   return treeMenu
 }
 export const loadView = (view) => {
   // 路由懒加载
-  return (resolve) => require([`@/views/${view}`], resolve)
+  return (resolve) => {
+    return require([`@/views/${view}`], resolve)
+  }
 }
-
 
 const state = {
   routes: [],
@@ -84,7 +88,7 @@ const mutations = {
 }
 
 const actions = {
-  generateRoutes({commit}, roles) {
+  generateRoutes({ commit }, roles) {
     return new Promise(resolve => {
       let accessedRoutes
       if (roles.includes('admin')) {
@@ -96,7 +100,7 @@ const actions = {
       resolve(accessedRoutes)
     })
   },
-  generateAsyncRoutes({commit}) {
+  generateAsyncRoutes({ commit }) {
     return new Promise(resolve => {
       listCurrentUserRoutes().then(res => {
         const accessedRoutes = treeMenuToRouters(res.data)
@@ -105,13 +109,13 @@ const actions = {
       })
     })
   },
-  resetAllRoutes({dispatch, state}, routes) {
+  resetAllRoutes({ dispatch, state }, routes) {
     return new Promise(resolve => {
       dispatch('resetRoutes')
       resolve()
     })
   },
-  resetRoutes({commit, state}) {
+  resetRoutes({ commit, state }) {
     return new Promise(resolve => {
       commit('RESET_ASYNC_ROUTES')
       resolve()

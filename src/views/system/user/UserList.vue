@@ -66,11 +66,11 @@
           {
             prop: 'id',
             label: '#Id',
-            width:60
+            width: 60
           },
           {
             prop: 'username',
-            label: '用户名',
+            label: '用户名'
           },
           {
             prop: 'email',
@@ -92,21 +92,21 @@
             label: '账户状态',
             useSwitch: true,
             method: 'updateUser',
-            width:80
+            width: 80
           }
         ],
-        tableOperateArray:[
+        tableOperateArray: [
           {
           label: '操作',
           type: 'link',
-            width:80,
+            width: 80,
           options: [
             {
               label: '',
               type: 'primary',
               method: 'editUser',
               icon: 'el-icon-edit',
-              size: 'mini',
+              size: 'mini'
             },
             {
               label: '',
@@ -120,7 +120,7 @@
           {
             label: '角色',
             type: 'link',
-            width:60,
+            width: 60,
             options: [
               {
                 label: '',
@@ -128,11 +128,11 @@
                 method: 'editUser',
                 icon: 'el-icon-s-custom',
                 size: 'mini',
-                circle:true
+                circle: true
               }
               ]
           }
-        ] ,
+        ],
         loadData: params => {
           return list(Object.assign(params, this.queryParam)).then(res => {
             return res

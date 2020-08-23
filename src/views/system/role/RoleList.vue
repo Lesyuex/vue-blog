@@ -7,27 +7,27 @@
 </template>
 
 <script>
-  import TablePagination from "@/components/TablePagination/TablePagination";
-  import {list} from '@/api/permission'
+  import TablePagination from '@/components/TablePagination/TablePagination'
+  import { list } from '@/api/permission'
 
   export default {
-    name: "List",
+    name: 'RoleList',
     components: {
       TablePagination
     },
     data() {
       return {
         queryParam: {
-          name: '',
+          name: ''
         },
         column: [
           {
             prop: 'name',
-            label: '名字',
+            label: '名字'
           },
           {
             prop: 'perm',
-            label: '权限',
+            label: '权限'
           }
         ],
         loadDataMethod: params => {

@@ -12,7 +12,7 @@ import Layout from '@/layout'
  * all roles can be accessed
  */
 export const constantRoutes = [
-  //首页
+  // 首页
   {
     path: '/',
     component: Layout,
@@ -23,7 +23,7 @@ export const constantRoutes = [
         path: 'dashboard',
         component: () => import('@/views/dashboard/index'),
         name: 'Dashboard',
-        meta: { title: '首页', icon: 'dashboard', affix: true }
+        meta: { title: '首页', icon: 'el-icon-s-home', affix: true }
       }
     ]
   },
@@ -89,7 +89,7 @@ const createRouter = () => new Router({
 
 const router = createRouter()
 
-//初始化路由
+// 初始化路由
 export function resetRouter() {
   const newRouter = createRouter()
   router.matcher = newRouter.matcher // reset router
