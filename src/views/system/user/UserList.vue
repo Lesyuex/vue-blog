@@ -1,20 +1,28 @@
 <template>
   <div class="app-container">
     <div style="padding-left: 20px;">
-      <el-form :inline="true" :model="queryParam" class="demo-form-inline" size="mini">
-        <el-form-item label="用户名:">
-          <el-input v-model="queryParam.username" placeholder="用户名" clearable />
-        </el-form-item>
-        <el-form-item label="用户状态:">
-          <el-select v-model="queryParam.status" placeholder="用户状态" clearable>
-            <el-option label="启用" value="1" />
-            <el-option label="禁用" value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="searchUser">查 询</el-button>
-          <el-button type="danger" @click="resetQueryParam">清 空</el-button>
-        </el-form-item>
+      <el-form :inline="true" :model="queryParam" size="mini">
+        <el-row :gutter="24">
+          <el-col :span="6">
+            <el-form-item label="用户名:" size="mini">
+              <el-input v-model="queryParam.username" placeholder="用户名" clearable/>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="用户状态:" size="mini">
+              <el-select v-model="queryParam.enabled" placeholder="用户状态" clearable>
+                <el-option label="启用" value="true"/>
+                <el-option label="禁用" value="false"/>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6" size="mini">
+            <el-form-item>
+              <el-button type="primary" @click="searchUser">查 询</el-button>
+              <el-button type="danger" @click="resetQueryParam">清 空</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
     </div>
     <table-pagination
@@ -24,25 +32,65 @@
       :columns="columns"
       :table-operate-array="tableOperateArray"
     />
-    <el-dialog :title="userModal.title" :visible.sync="userModal.dialogTableVisible" :width="dialogWidth">
-      <el-form ref="form" :model="userModal.user" label-width="80px">
-        <el-form-item label="账号:">
-          <el-input v-model="userModal.user.username" />
-        </el-form-item>
-        <el-form-item label="邮箱:">
-          <el-input v-model="userModal.user.email" />
-        </el-form-item>
+    <el-dialog :title="userModal.title" :visible.sync="userModal.dialogTableVisible" :width="dialogWidth"
+               :close-on-click-modal="false">
+      <el-form ref="form" :model="userModal.user" label-width="80px" size="mini" label-position="left">
+        <el-row :gutter="24">
+          <el-col :span="12">
+            <el-form-item label="账号">
+              <el-input v-model="userModal.user.username"/>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="邮箱">
+              <el-input v-model="userModal.user.email"/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="24">
+          <el-col :span="12">
+            <el-form-item label="角色">
+              <el-select style="width: 100%"
+                         v-model="userModal.user.rolesList"
+                         multiple
+                         filterable
+                         allow-create
+                         default-first-option
+                         placeholder="选择用户角色">
+                <el-option
+                  v-for="item in systemRoleList"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="24">
+          <el-col :span="12">
+            <el-form-item label="启用状态">
+              <el-switch
+                v-model="userModal.user.enabled"
+                active-color="#13ce66"
+                inactive-color="#ff4949"
+                @change="changeEnable"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="userModal.dialogTableVisible = false">取 消</el-button>
-        <el-button type="primary" @click="userModal.dialogTableVisible = false">确 定</el-button>
+        <el-button type="primary" @click="submitEdit">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import { list, deleteUserByUserId, updateUserByUser } from '@/api/user'
+  import { listUserByPage, deleteUserByUserId, updateUserByUser } from '@/api/user'
+  import { listRoleByPage } from '@/api/system/system'
   import { Message } from 'element-ui'
   import TablePagination from '@/components/TablePagination/TablePagination'
 
@@ -53,6 +101,7 @@
     },
     data() {
       return {
+        systemRoleList: [],
         userModal: {
           dialogTableVisible: false,
           title: '编辑用户',
@@ -60,9 +109,77 @@
         },
         queryParam: {
           username: '',
-          status: ''
+          enable: ''
         },
-        columns: [
+        columns: [],
+        tableOperateArray: [],
+        loadData: params => {
+          return listUserByPage(Object.assign(params, this.queryParam)).then(res => {
+            return res
+          })
+        },
+        dialogWidth: document.body.clientWidth * 0.4 + 'px'
+      }
+    },
+    created() {
+      const that = this
+      this.$bus.$off('updateCurrentUser')
+      this.$bus.$off('editUser')
+      this.$bus.$off('deleteUser')
+      this.listColumnsInfo()
+      listUserByPage({ current: 1, size: 100 }).then(res => {
+        that.systemRoleList = res.data.records
+      })
+    },
+    mounted() {
+      this.$bus.$on('updateCurrentUser', (data) => {
+        this.updateUser(data)
+      })
+      this.$bus.$on('editUser', (data) => {
+        this.editUser(data)
+      })
+      this.$bus.$on('deleteUser', (data) => {
+        this.deleteUser(data)
+      })
+    },
+    methods: {
+      changeEnable() {
+        console.log(this.userModal.user)
+      },
+      resetQueryParam() {
+        this.queryParam = Object.assign({})
+      },
+      searchUser() {
+        this.$refs.table.refreshTable()
+      },
+      submitEdit() {
+        this.updateUser(this.userModal.user)
+        this.userModal.dialogTableVisible = false
+      },
+      editUser(data) {
+        this.userModal.user = data
+        // 查找角色
+        listRole(Object.assign({ userId: row.id, current: 1, size: 100 })).then(res => {
+          console.log(res)
+        })
+        this.userModal.dialogTableVisible = true
+      },
+      updateUser(data) {
+        console.log(data)
+        updateUserByUser(data).then(res => {
+          Message({
+            message: res.message,
+            type: res.type,
+            duration: 5 * 1000
+          })
+        })
+      },
+      deleteUser(data) {
+        deleteUserByUserId(data).then(res => {
+        })
+      },
+      listColumnsInfo() {
+        this.columns = [
           {
             prop: 'id',
             label: '#Id',
@@ -88,104 +205,54 @@
             width: 200
           },
           {
-            prop: 'enable',
+            prop: 'enabled',
             label: '账户状态',
             useSwitch: true,
-            method: 'updateUser',
+            method: 'updateCurrentUser',
             width: 80
           }
-        ],
-        tableOperateArray: [
+        ]
+        this.tableOperateArray = [
+          /*   {
+               label: '角色',
+               type: 'link',
+               width: 60,
+               options: [
+                 {
+                   label: '',
+                   type: 'success',
+                   method: 'editUser',
+                   icon: 'el-icon-s-check',
+                   size: 'mini',
+                   circle: true
+                 }
+               ]
+             },*/
           {
-          label: '操作',
-          type: 'link',
-            width: 80,
-          options: [
-            {
-              label: '',
-              type: 'primary',
-              method: 'editUser',
-              icon: 'el-icon-edit',
-              size: 'mini'
-            },
-            {
-              label: '',
-              type: 'danger',
-              method: 'deleteUser',
-              icon: 'el-icon-delete',
-              size: 'mini'
-            }
-          ]
-        },
-          {
-            label: '角色',
+            label: '操作',
             type: 'link',
-            width: 60,
+            width: 80,
             options: [
               {
                 label: '',
-                type: 'success',
+                type: 'primary',
                 method: 'editUser',
-                icon: 'el-icon-s-custom',
-                size: 'mini',
-                circle: true
+                icon: 'el-icon-edit',
+                size: 'mini'
+              },
+              {
+                label: '',
+                type: 'danger',
+                method: 'deleteUser',
+                icon: 'el-icon-delete',
+                size: 'mini'
               }
-              ]
+            ]
           }
-        ],
-        loadData: params => {
-          return list(Object.assign(params, this.queryParam)).then(res => {
-            return res
-          })
-        },
-        dialogWidth: document.body.clientWidth * 0.4 + 'px'
-      }
-    },
-    mounted() {
-      this.$bus.$on('updateUser', (data) => {
-        this.updateUser(data)
-      })
-      this.$bus.$on('editUser', (data) => {
-        this.editUser(data)
-      })
-      this.$bus.$on('deleteUser', (data) => {
-        this.deleteUser(data)
-      })
-    },
-    methods: {
-      resetQueryParam() {
-        this.queryParam = Object.assign({})
-      },
-      searchUser() {
-        this.$refs.table.refreshTable()
-      },
-      editUser(data) {
-        this.userModal.user = data
-        this.userModal.dialogTableVisible = true
-      },
-     async updateUser(data) {
-        updateUserByUser(data).then(res => {
-          if (res.code === 200) {
-            Message({
-              message: res.msg,
-              type: 'success',
-              duration: 1000
-            })
-          }
-        })
-      },
-      async deleteUser(data) {
-        deleteUserByUserId(data).then(res => {
-          if (res.code === 200) {
-            Message({
-              message: res.msg,
-              type: 'success',
-              duration: 1000
-            })
-          }
-        })
+        ]
       }
     }
+
   }
 </script>
 

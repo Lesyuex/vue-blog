@@ -33,36 +33,26 @@ service.interceptors.request.use(
 // response interceptor
 service.interceptors.response.use(response => {
     const res = response.data
-    // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 200) {
-      Message({
-        message: res.msg || 'Error',
-        type: 'error',
-        duration: 5 * 1000
-      })
-
-      // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
-      if (res.code === 502 || res.code === 504) {
-        // to re-login
-        MessageBox.confirm('你的登录已失效，请重新登录，取消将停滞在本页面', '重新登录', {
-          confirmButtonText: '重新登录',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          store.dispatch('user/resetToken').then(() => {
-            location.reload()
-          })
+    // if the custom code is not 200, it is judged as an error.
+    if (res.code === 502 || res.code === 504) {
+      MessageBox.confirm('你的登录已失效，请重新登录', '重新登录', {
+        confirmButtonText: '重新登录',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('user/resetToken').then(() => {
+          location.reload()
         })
-      }
-      return Promise.reject(new Error(res.message || 'Error'))
+      })
+      return Promise.reject(new Error(res.msg || 'Error'))
     } else {
+      res.type = res.code === 200 ? 'success' : 'error'
       return res
     }
-  },
-  error => {
+  }, error => {
     console.log('err' + error) // for debug
     Message({
-      message: '请求服务器失败啦！',
+      message: 'error',
       type: 'error',
       duration: 5 * 1000
     })

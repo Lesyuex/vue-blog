@@ -8,7 +8,7 @@
 
 <script>
   import TablePagination from '@/components/TablePagination/TablePagination'
-  import { list } from '@/api/permission'
+  import { listPermission } from '@/api/system/system'
 
   export default {
     name: 'List',

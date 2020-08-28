@@ -24,7 +24,7 @@
               v-model="scope.row[col.prop]"
               active-color="#13ce66"
               inactive-color="#ff4949"
-              @change="emitSwitch(col.method,scope.row)"
+              @change="emitOperate(col.method,scope.row)"
             />
           </span>
           <span v-else-if="col.render">
@@ -162,9 +162,6 @@
       if (sumNoWidth!==0){
         this.columnWidth= (el[0].offsetWidth - sumWidth)/(sumNoWidth)
       }
-      console.log(sumWidth)
-      console.log(sumNoWidth)
-      console.log(this.columnWidth)
       this.refreshTable()
     },
     methods: {
@@ -177,9 +174,17 @@
         }
         that.loadDataMethod(params).then(res => {
           that.tableData = res.data.records
-          if (that.showPagination && res.data.records.length === 0 && that.paginationInfo.current > 1) {
-            this.handleCurrentChange(that.paginationInfo.current - 1)
-          } else {
+          if (that.showPagination) {
+            if (res.data.records.length === 0 ){
+              if (that.paginationInfo.current > 1){
+                that.handleCurrentChange(that.paginationInfo.current - 1)
+              }
+              else {
+                that.paginationInfo.total = 0
+              }
+            }
+          }
+          else {
             if (that.showPagination) {
               that.paginationInfo.total = res.data.total
             }
@@ -189,14 +194,8 @@
       refreshTable() {
         this.loadTableData()
       },
-      async emitSwitch(parentMethodName, data) {
+      emitOperate(parentMethodName, data) {
         this.$bus.emit(parentMethodName, data) // 调用父组件方法
-        console.log('emitSwitch')
-        this.refreshTable()
-      },
-      async emitOperate(parentMethodName, data) {
-        this.$bus.emit(parentMethodName, data) // 调用父组件方法
-        console.log('emitOperate')
         this.refreshTable()
       },
       showItem(item) {

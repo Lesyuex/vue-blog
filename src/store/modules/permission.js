@@ -102,11 +102,16 @@ const actions = {
   },
   generateAsyncRoutes({ commit }) {
     return new Promise(resolve => {
-      listCurrentUserRoutes().then(res => {
-        const accessedRoutes = treeMenuToRouters(res.data)
-        commit('SET_ROUTES', accessedRoutes)
-        resolve(accessedRoutes)
-      })
+      try {
+        listCurrentUserRoutes().then(res => {
+          const accessedRoutes = treeMenuToRouters(res.data)
+          commit('SET_ROUTES', accessedRoutes)
+          resolve(accessedRoutes)
+        })
+      }catch (e) {
+        console.log('listCurrentUserRoutes:'+e)
+        resolve()
+      }
     })
   },
   resetAllRoutes({ dispatch, state }, routes) {

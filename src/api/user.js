@@ -18,9 +18,9 @@ export function listCurrentUserRoutes() {
   })
 }
 
-export function list(params) {
+export function listUserByPage(params) {
   return request({
-    url: '/user/list',
+    url: '/user/listByPage',
     method: 'get',
     params
   })
