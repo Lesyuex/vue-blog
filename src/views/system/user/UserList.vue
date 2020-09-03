@@ -51,7 +51,7 @@
           <el-col :span="12">
             <el-form-item label="角色">
               <el-select style="width: 100%"
-                         v-model="userModal.user.rolesList"
+                         v-model="userModal.user.roleList"
                          multiple
                          filterable
                          allow-create
@@ -74,7 +74,6 @@
                 v-model="userModal.user.enabled"
                 active-color="#13ce66"
                 inactive-color="#ff4949"
-                @change="changeEnable"
               />
             </el-form-item>
           </el-col>
@@ -90,8 +89,8 @@
 
 <script>
   import { listUserByPage, deleteUserByUserId, updateUserByUser } from '@/api/user'
-  import { listRoleByPage } from '@/api/system/system'
-  import { Message } from 'element-ui'
+  import { listUserRole } from '@/api/system/system'
+  import { Message, MessageBox } from 'element-ui'
   import TablePagination from '@/components/TablePagination/TablePagination'
 
   export default {
@@ -105,7 +104,9 @@
         userModal: {
           dialogTableVisible: false,
           title: '编辑用户',
-          user: {}
+          user: {
+            roleList: []
+          }
         },
         queryParam: {
           username: '',
@@ -127,8 +128,8 @@
       this.$bus.$off('editUser')
       this.$bus.$off('deleteUser')
       this.listColumnsInfo()
-      listUserByPage({ current: 1, size: 100 }).then(res => {
-        that.systemRoleList = res.data.records
+      listUserRole({}).then(res => {
+        that.systemRoleList = res.data
       })
     },
     mounted() {
@@ -143,9 +144,6 @@
       })
     },
     methods: {
-      changeEnable() {
-        console.log(this.userModal.user)
-      },
       resetQueryParam() {
         this.queryParam = Object.assign({})
       },
@@ -157,25 +155,42 @@
         this.userModal.dialogTableVisible = false
       },
       editUser(data) {
-        this.userModal.user = data
+        const that = this
         // 查找角色
-        listRole(Object.assign({ userId: row.id, current: 1, size: 100 })).then(res => {
-          console.log(res)
+        that.userModal.user = Object.assign({ roleList: [] }, data)
+        listUserRole({ userId: data.id }).then(res => {
+          for (let i = 0; i < res.data.length; i++) {
+            that.userModal.user.roleList.push(res.data[i].value)
+          }
+          this.userModal.dialogTableVisible = true
         })
-        this.userModal.dialogTableVisible = true
       },
       updateUser(data) {
-        console.log(data)
+        const that = this
         updateUserByUser(data).then(res => {
           Message({
             message: res.message,
             type: res.type,
             duration: 5 * 1000
           })
+          that.$refs.table.refreshTable()
         })
       },
       deleteUser(data) {
-        deleteUserByUserId(data).then(res => {
+        const that = this
+        MessageBox.confirm('确认删除此用户吗？', '删除', {
+          confirmButtonText: '确认',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          deleteUserByUserId(data).then(res => {
+            Message({
+              message: res.message,
+              type: res.type,
+              duration: 5 * 1000
+            })
+            that.$refs.table.refreshTable()
+          })
         })
       },
       listColumnsInfo() {

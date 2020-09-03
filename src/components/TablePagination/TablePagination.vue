@@ -8,7 +8,7 @@
       :row-class-name="tableRowClassName"
       border
     >
-     <!--数据列-->
+      <!--数据列-->
       <el-table-column
         v-for="(col,key) in this.$props.columns"
         :key="key"
@@ -131,7 +131,7 @@
           size: 12,
           total: 0,
           sizes: [12, 20, 30, 50]
-        },
+        }
       }
     },
     //created执行时挂载阶段还没有开始，模版还没有渲染成html，所以无法获取元素。created钩子函数主要用来初始化数据。可用data和prop中的数据
@@ -144,23 +144,23 @@
       // 计算列宽
       let sumWidth = 0
       let sumNoWidth = 0
-      this.$props.columns.forEach(col=>{
+      this.$props.columns.forEach(col => {
         if (col.width) {
-          sumWidth = sumWidth+col.width
-        }else {
-          sumNoWidth=sumNoWidth+1
+          sumWidth = sumWidth + col.width
+        } else {
+          sumNoWidth = sumNoWidth + 1
         }
       })
-      this.$props.tableOperateArray.forEach(item=>{
-        if (item.width){
-          sumWidth = sumWidth+item.width
-        }else {
-          sumNoWidth=sumNoWidth+1
+      this.$props.tableOperateArray.forEach(item => {
+        if (item.width) {
+          sumWidth = sumWidth + item.width
+        } else {
+          sumNoWidth = sumNoWidth + 1
         }
       })
       let el = document.getElementsByClassName('el-table')
-      if (sumNoWidth!==0){
-        this.columnWidth= (el[0].offsetWidth - sumWidth)/(sumNoWidth)
+      if (sumNoWidth !== 0) {
+        this.columnWidth = (el[0].offsetWidth - sumWidth) / (sumNoWidth)
       }
       this.refreshTable()
     },
@@ -168,23 +168,24 @@
       loadTableData() {
         const that = this
         // 拼接参数
-        let params=Object.assign({})
+        let params = Object.assign({})
         if (that.showPagination) {
-        params=Object.assign(params,{current:that.paginationInfo.current,size:params.size = that.paginationInfo.size})
+          params = Object.assign(params, {
+            current: that.paginationInfo.current,
+            size: params.size = that.paginationInfo.size
+          })
         }
         that.loadDataMethod(params).then(res => {
           that.tableData = res.data.records
           if (that.showPagination) {
-            if (res.data.records.length === 0 ){
-              if (that.paginationInfo.current > 1){
+            if (res.data.records.length === 0) {
+              if (that.paginationInfo.current > 1) {
                 that.handleCurrentChange(that.paginationInfo.current - 1)
-              }
-              else {
+              } else {
                 that.paginationInfo.total = 0
               }
             }
-          }
-          else {
+          } else {
             if (that.showPagination) {
               that.paginationInfo.total = res.data.total
             }
@@ -194,9 +195,8 @@
       refreshTable() {
         this.loadTableData()
       },
-      emitOperate(parentMethodName, data) {
+       emitOperate(parentMethodName, data) {
         this.$bus.emit(parentMethodName, data) // 调用父组件方法
-        this.refreshTable()
       },
       showItem(item) {
         console.log(item)

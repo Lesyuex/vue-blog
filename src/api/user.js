@@ -11,9 +11,9 @@ export function login(parameter) {
   })
 }
 
-export function listCurrentUserRoutes() {
+export function listCurrentUserMenu() {
   return request({
-    url: '/permission/listCurrentUserRoutes',
+    url: '/permission/listCurrentUserMenu',
     method: 'get'
   })
 }

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
-import { getToken } from '@/utils/auth'
+import { getToken, setToken } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
@@ -19,6 +19,7 @@ service.interceptors.request.use(
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
+      //判断是否需要刷新Token
       config.headers['BLOG-TOKEN'] = getToken()
     }
     return config
@@ -32,9 +33,16 @@ service.interceptors.request.use(
 
 // response interceptor
 service.interceptors.response.use(response => {
+    // 判断Token是否已经刷新
+    const headers = response.headers
+    if (headers && headers['refresh-blog-token'] && headers['refresh-blog-token'] !== '') {
+      store.dispatch('user/refreshToken', headers['refresh-blog-token']).then(() => {
+        console.log('Token已经刷新')
+      })
+    }
     const res = response.data
     // if the custom code is not 200, it is judged as an error.
-    if (res.code === 502 || res.code === 504) {
+    if (res.code === 504) {
       MessageBox.confirm('你的登录已失效，请重新登录', '重新登录', {
         confirmButtonText: '重新登录',
         cancelButtonText: '取消',

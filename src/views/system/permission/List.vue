@@ -8,7 +8,7 @@
 
 <script>
   import TablePagination from '@/components/TablePagination/TablePagination'
-  import { listPermission } from '@/api/system/system'
+  import { listPermissionByPage } from '@/api/system/system'
 
   export default {
     name: 'List',
@@ -31,7 +31,7 @@
           }
         ],
         loadDataMethod: params => {
-          return list(Object.assign(params, this.queryParam)).then(res => {
+          return listPermissionByPage(Object.assign(params, this.queryParam)).then(res => {
             return res
           })
         }

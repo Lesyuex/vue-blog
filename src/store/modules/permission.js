@@ -1,5 +1,5 @@
 import { asyncRoutes, constantRoutes } from '@/router'
-import { listCurrentUserRoutes } from '@/api/user'
+import { listCurrentUserMenu } from '@/api/user'
 
 /**
  * Use meta.role to determine if the current user has permission
@@ -73,17 +73,20 @@ export const loadView = (view) => {
 
 const state = {
   routes: [],
-  addRoutes: []
+  addRoutes: [],
+  isAsyncRoutes: false
 }
 
 const mutations = {
   SET_ROUTES: (state, routes) => {
     state.addRoutes = routes
     state.routes = constantRoutes.concat(routes)
+    state.isAsyncRoutes = true
   },
   RESET_ASYNC_ROUTES: (state) => {
     state.addRoutes = []
     state.routes = constantRoutes
+    state.isAsyncRoutes = true
   }
 }
 
@@ -102,16 +105,16 @@ const actions = {
   },
   generateAsyncRoutes({ commit }) {
     return new Promise(resolve => {
-      try {
-        listCurrentUserRoutes().then(res => {
+      listCurrentUserMenu().then(res => {
+        if (res.code === 200) {
           const accessedRoutes = treeMenuToRouters(res.data)
           commit('SET_ROUTES', accessedRoutes)
           resolve(accessedRoutes)
-        })
-      }catch (e) {
-        console.log('listCurrentUserRoutes:'+e)
-        resolve()
-      }
+        } else {
+          commit('RESET_ASYNC_ROUTES', [])
+          resolve([])
+        }
+      })
     })
   },
   resetAllRoutes({ dispatch, state }, routes) {
