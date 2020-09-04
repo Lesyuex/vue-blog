@@ -303,39 +303,43 @@
           {
             prop: 'id',
             label: '#ID',
-            width: 60
+            minWidth: '4%',
+            center:true
           },
           {
             prop: 'name',
-            label: '角色'
+            label: '角色',
+            center:true
           },
           {
             prop: 'remark',
-            label: '备注'
+            label: '备注',
+            center:true
           },
           {
             prop: 'createTime',
             label: '创建时间',
-            width: 200
+            center:true
           },
           {
             prop: 'updateTime',
             label: '更新时间',
-            width: 200
+            center:true
           },
           {
             prop: 'enabled',
             label: '启用状态',
             useSwitch: true,
             method: 'updateCurrentRole',
-            width: 80
+            minWidth: '4%',
+            center:true
           }
         ]
         this.tableOperateArray = [
           {
             label: '菜单',
             type: 'link',
-            width: 60,
+            minWidth: '3%',
             options: [
               {
                 label: '',
@@ -345,11 +349,12 @@
                 size: 'mini',
                 circle: true
               }
-            ]
+            ],
+            center:true
           }, {
             label: 'API',
             type: 'link',
-            width: 60,
+            minWidth: '3%',
             options: [
               {
                 label: '',
@@ -359,12 +364,13 @@
                 size: 'mini',
                 circle: true
               }
-            ]
+            ],
+            center:true
           },
           {
             label: '操作',
             type: 'link',
-            width: 80,
+            minWidth: '5%',
             options: [
               {
                 label: '',
@@ -380,7 +386,8 @@
                 icon: 'el-icon-delete',
                 size: 'mini'
               }
-            ]
+            ],
+            center:true
           }
 
         ]

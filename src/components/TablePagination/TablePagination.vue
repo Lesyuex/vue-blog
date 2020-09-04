@@ -1,13 +1,17 @@
 <template>
-  <div class="app-container">
+
+  <div class="app-container my-app-container">
     <!--表格-->
     <el-table
       :data="tableData"
       ref="elementuiTable"
       size="mini"
       :row-class-name="tableRowClassName"
+      :max-height="tabelMaxHeight"
+      row-key="id"
       border
-    >
+      :default-expand-all="expandAll"
+      :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
       <!--数据列-->
       <el-table-column
         v-for="(col,key) in this.$props.columns"
@@ -15,8 +19,9 @@
         :prop="col.prop"
         :label="col.label"
         :show-overflow-tooltip="true"
-        :width="col.width?col.width:columnWidth"
-        align="center"
+        :min-width="col.minWidth?col.minWidth:columnMinWidth"
+        :align="col.center?'center':'left'"
+        :fixed="col.fixed?col.fixed:false"
       >
         <template slot-scope="scope">
           <span v-if="col.useSwitch">
@@ -36,11 +41,12 @@
       <!--操作列-->
       <el-table-column
         class-name="small-padding fixed-width"
-        align="center"
+        :align="col.center?'center':'left'"
         v-for="(col,colIndex) in this.$props.tableOperateArray"
-        :width="col.width?col.width:columnWidth"
+        :min-width="col.minWidth?col.minWidth:columnMinWidth"
         :key="col.label"
         :label="col.label">
+        :fixed="col.fixed?col.fixed:false"
         <template slot-scope="scope">
           <!--链接类型-->
           <span v-if="col.type==='link'">
@@ -117,6 +123,16 @@
         type: Array,
         required: false,
         default: () => []
+      },
+      expandAll: {
+        type: Boolean,
+        required: false,
+        default: () => false
+      },
+      tabelMaxHeight: {
+        type: String,
+        required: false,
+        default: () => 500
       }
     },
     data() {
@@ -126,6 +142,7 @@
         },
         tableData: [],
         columnWidth: 0,
+        columnMinWidth: 0,
         paginationInfo: {
           current: 1,
           size: 12,
@@ -136,7 +153,32 @@
     },
     //created执行时挂载阶段还没有开始，模版还没有渲染成html，所以无法获取元素。created钩子函数主要用来初始化数据。可用data和prop中的数据
     created() {
-
+      let sumMinWidth = 0
+      let sumNoMinWidth = 0
+      this.$props.columns.forEach(col => {
+        if (col.minWidth) {
+          let num = col.minWidth.replace('%', '')
+          console.log(num)
+          sumMinWidth = sumMinWidth + num
+        } else {
+          sumNoMinWidth = sumNoMinWidth + 1
+        }
+      })
+      this.$props.tableOperateArray.forEach(item => {
+        if (item.minWidth) {
+          let num = item.minWidth.replace('%', '')
+          sumMinWidth = sumMinWidth + num
+        } else {
+          sumNoMinWidth = sumNoMinWidth + 1
+        }
+      })
+      let columnMinWidth = 100 - sumMinWidth
+      if (columnMinWidth > 0 && sumNoMinWidth !== 0) {
+        this.columnMinWidth = columnMinWidth / sumNoMinWidth + '%'
+      } else {
+        this.columnMinWidth = 100 / (this.$props.columns.length + this.$props.tableOperateArray.length) + '%'
+      }
+      this.refreshTable()
     },
     //computed是在DOM执行完成后立马执行（如：赋值）
     //该函数在模版渲染完成后才被调用
@@ -159,10 +201,12 @@
         }
       })
       let el = document.getElementsByClassName('el-table')
+      let app = document.getElementsByClassName('app-container')
+      console.log(app)
       if (sumNoWidth !== 0) {
         this.columnWidth = (el[0].offsetWidth - sumWidth) / (sumNoWidth)
       }
-      this.refreshTable()
+
     },
     methods: {
       loadTableData() {
@@ -176,26 +220,25 @@
           })
         }
         that.loadDataMethod(params).then(res => {
-          that.tableData = res.data.records
+          if (res.data.records) {
+            that.tableData = res.data.records
+          } else {
+            that.tableData = res.data
+          }
           if (that.showPagination) {
             if (res.data.records.length === 0) {
               if (that.paginationInfo.current > 1) {
                 that.handleCurrentChange(that.paginationInfo.current - 1)
-              } else {
-                that.paginationInfo.total = 0
               }
             }
-          } else {
-            if (that.showPagination) {
-              that.paginationInfo.total = res.data.total
-            }
+            that.paginationInfo.total = res.data.total
           }
         })
       },
       refreshTable() {
         this.loadTableData()
       },
-       emitOperate(parentMethodName, data) {
+      emitOperate(parentMethodName, data) {
         this.$bus.emit(parentMethodName, data) // 调用父组件方法
       },
       showItem(item) {

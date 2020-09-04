@@ -60,7 +60,7 @@ service.interceptors.response.use(response => {
   }, error => {
     console.log('err' + error) // for debug
     Message({
-      message: 'error',
+      message: '请求服务器出错啦...',
       type: 'error',
       duration: 5 * 1000
     })

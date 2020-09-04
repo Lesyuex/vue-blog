@@ -198,33 +198,36 @@
           {
             prop: 'id',
             label: '#Id',
-            width: 60
+            minWidth: '4%',
+            center: true
           },
           {
             prop: 'username',
-            label: '用户名'
+            label: '用户名',
+            center: true,
           },
           {
             prop: 'email',
             label: 'Email',
-            width: 210
+            center: true
           },
           {
             prop: 'createTime',
             label: '创建时间',
-            width: 200
+            center: true
           },
           {
             prop: 'updateTime',
             label: '更新时间',
-            width: 200
+            center: true
           },
           {
             prop: 'enabled',
             label: '账户状态',
             useSwitch: true,
             method: 'updateCurrentUser',
-            width: 80
+            minWidth: '4%',
+            center: true
           }
         ]
         this.tableOperateArray = [
@@ -246,7 +249,7 @@
           {
             label: '操作',
             type: 'link',
-            width: 80,
+            minWidth: '4%',
             options: [
               {
                 label: '',
@@ -262,7 +265,8 @@
                 icon: 'el-icon-delete',
                 size: 'mini'
               }
-            ]
+            ],
+            center: true
           }
         ]
       }
